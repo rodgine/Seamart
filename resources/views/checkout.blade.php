@@ -407,7 +407,17 @@
         @if (session('success'))
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
-                    localStorage.removeItem('cart'); // Clear the cart
+                    const cart = JSON.parse(localStorage.getItem('cart')) || {};
+
+                    // Remove only items where selected === true
+                    Object.keys(cart).forEach(key => {
+                        if (cart[key].selected === true) {
+                            delete cart[key];
+                        }
+                    });
+
+                    localStorage.setItem('cart', JSON.stringify(cart)); // Save updated cart
+
                     Swal.fire({
                         icon: 'success',
                         title: 'Success',

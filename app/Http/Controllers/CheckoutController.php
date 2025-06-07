@@ -39,9 +39,15 @@ class CheckoutController extends Controller
             'mode_of_payment' => 'required|string|max:255', 
         ]);
 
-        $cartItems = json_decode($request->cart_data, true);
-        if (empty($cartItems)) {
-            return back()->with('error', 'Your cart is empty.');
+        $cartItemsRaw = json_decode($request->cart_data, true);
+
+        // Filter only selected items
+        $cartItems = collect($cartItemsRaw)->filter(function ($item) {
+            return isset($item['selected']) && $item['selected'] === true;
+        })->values();
+
+        if ($cartItems->isEmpty()) {
+            return back()->with('error', 'No items were selected for checkout.');
         }
 
         $customerId = auth('customer')->id();
@@ -65,23 +71,19 @@ class CheckoutController extends Controller
             return $addr->only(array_keys($inputAddress)) == $inputAddress;
         });
 
-        // Case: No address at all → save automatically
         if ($existingAddresses->isEmpty()) {
             Address::create(array_merge($inputAddress, [
                 'customer_id' => $customerId,
                 'default' => true
             ]));
-        }
-
-        // Case: address doesn't exist and needs confirmation
-        elseif (!$addressExists && $request->has('confirm_new_address')) {
+        } elseif (!$addressExists && $request->has('confirm_new_address')) {
             Address::create(array_merge($inputAddress, [
                 'customer_id' => $customerId,
                 'default' => false
             ]));
         }
 
-        // Create Order
+        // Create the order
         $order = Order::create(array_merge($inputAddress, [
             'customer_id' => $customerId,
             'order_notes' => $request->order_notes,
@@ -98,9 +100,8 @@ class CheckoutController extends Controller
             ]);
         }
 
-        // Log transaction
         $customer = auth('customer')->user();
-        $itemsText = collect($cartItems)->map(fn($item) => "{$item['qty']}kg of {$item['name']}")->implode(', ');
+        $itemsText = $cartItems->map(fn($item) => "{$item['qty']}kg of {$item['name']}")->implode(', ');
 
         TransactionLog::create([
             'date' => now()->toDateString(),

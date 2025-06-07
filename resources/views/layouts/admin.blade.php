@@ -92,17 +92,29 @@
                                     </a>
                                 </li>
                                 <li class="sidebar-item">
-                                    <a class="sidebar-link" href="{{ route('admin.orders.index') }}"
-                                        aria-expanded="false">
-                                        <span><i class="ti ti-shopping-cart"></i></span>
-                                        <span class="hide-menu">Orders</span>
+                                    <a class="sidebar-link d-flex justify-content-between align-items-center"
+                                        href="{{ route('admin.orders.index') }}">
+                                        <div>
+                                            <i class="ti ti-shopping-cart"></i>
+                                            <span class="hide-menu ms-2">Orders</span>
+                                        </div>
+                                        @if (!empty($pendingOrdersCount) && $pendingOrdersCount > 0)
+                                            <span class="badge bg-warning rounded-pill"
+                                                title="There are {{ $pendingOrdersCount }} pending order requests">{{ $pendingOrdersCount }}</span>
+                                        @endif
                                     </a>
                                 </li>
                                 <li class="sidebar-item">
-                                    <a class="sidebar-link" href="{{ route('admin.customer-details.index') }}"
-                                        aria-expanded="false">
-                                        <span><i class="ti ti-users"></i></span>
-                                        <span class="hide-menu">Customers</span>
+                                    <a class="sidebar-link d-flex justify-content-between align-items-center"
+                                        href="{{ route('admin.customer-details.index') }}">
+                                        <div>
+                                            <i class="ti ti-users"></i>
+                                            <span class="hide-menu ms-2">Customers</span>
+                                        </div>
+                                        @if (!empty($customerCount) && $customerCount > 0)
+                                            <span class="badge bg-warning rounded-pill"
+                                                title="Total registered customers: {{ $customerCount }}">{{ $customerCount }}</span>
+                                        @endif
                                     </a>
                                 </li>
                             </ul>
@@ -148,11 +160,78 @@
                                 <i class="ti ti-menu-2"></i>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link nav-icon-hover" href="javascript:void(0)">
-                                <i class="ti ti-bell-ringing"></i>
-                                <div class="notification bg-primary rounded-circle"></div>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link nav-icon-hover position-relative" href="#"
+                                id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="ti ti-bell-ringing fs-5"></i>
+                                @if ($totalNotifications > 0)
+                                    <span
+                                        class="position-absolute top-4 right-4 translate-middle badge rounded-circle bg-danger p-1"
+                                        style="font-size: 10px; min-width: 16px; height: 16px; line-height: 10px;">
+                                        {{ $totalNotifications }}
+                                    </span>
+                                @endif
                             </a>
+
+                            <ul class="dropdown-menu dropdown-menu-start dropdown-menu-sm shadow mt-2"
+                                aria-labelledby="notificationDropdown" style="min-width: 280px;">
+
+                                @if ($pendingOrdersCount > 0)
+                                    <li>
+                                        <a href="{{ url('/orders') }}"
+                                            class="dropdown-item d-flex align-items-start">
+                                            <i class="ti ti-shopping-cart fs-5 text-warning me-3 mt-1"></i>
+                                            <div>
+                                                <strong>{{ $pendingOrdersCount }} Pending Orders</strong>
+                                                <div class="text-muted small">View and manage new order requests</div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                @endif
+
+                                @if ($customerCount > 0)
+                                    <li>
+                                        <a href="{{ url('/customer-details') }}"
+                                            class="dropdown-item d-flex align-items-start">
+                                            <i class="ti ti-users fs-5 text-info me-3 mt-1"></i>
+                                            <div>
+                                                <strong>{{ $customerCount }} New Customers</strong>
+                                                <div class="text-muted small">Registered today</div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                @endif
+
+                                @if ($lowStockCount > 0)
+                                    <li>
+                                        <a href="{{ url('/products') }}"
+                                            class="dropdown-item d-flex align-items-start">
+                                            <i class="ti ti-alert-triangle fs-5 text-primary me-3 mt-1"></i>
+                                            <div>
+                                                <strong>{{ $lowStockCount }} Products Low on Stock</strong>
+                                                <div class="text-muted small">Reorder soon</div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                @endif
+
+                                @if ($noStockCount > 0)
+                                    <li>
+                                        <a href="{{ url('/products') }}"
+                                            class="dropdown-item d-flex align-items-start">
+                                            <i class="ti ti-alert-circle fs-5 text-danger me-3 mt-1"></i>
+                                            <div>
+                                                <strong>{{ $noStockCount }} Out of Stock Items</strong>
+                                                <div class="text-muted small">Restock needed urgently</div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                @endif
+
+                                @if ($totalNotifications === 0)
+                                    <li class="dropdown-item text-center text-muted">No new notifications</li>
+                                @endif
+                            </ul>
                         </li>
                     </ul>
                     <div class="greeting-wrapper">

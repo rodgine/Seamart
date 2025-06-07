@@ -41,7 +41,7 @@ class AdminLoginController extends Controller
 
     public function dashboard()
     {
-        $products = Product::with('category')->latest()->take(3)->get();
+        $products = Product::with('category')->latest()->take(6)->get();
         // Top 4 best-selling products
         $bestSellingProducts = Product::select('products.id', 'products.name', 'products.price', 'products.discount', 'products.image')
             ->join('order_items', 'products.id', '=', 'order_items.product_id')

@@ -6,7 +6,10 @@
             <a href="#" class="me-2 current mx-2">SHOPPING CART</a>
             <i class="bi bi-arrow-right mx-2"></i>
 
-            <a href="{{ url('/checkout') }}" class="me-2">CHECKOUT</a>
+            <a href="{{ url('/checkout') }}" class="me-2"
+                @guest('customer')
+                        style="pointer-events: none; cursor: not-allowed;"
+                    @endguest>CHECKOUT</a>
             <i class="bi bi-arrow-right mx-2"></i>
 
             @auth
@@ -26,6 +29,14 @@
                             style="width: 100%; background-image: repeating-linear-gradient(45deg, rgb(12, 76, 125), rgb(12, 76, 125) 13px, #fff 10px, #fff 20px);">
                         </div>
                     </div>
+                </div>
+
+                {{-- Add Select All Checkbox --}}
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" value="" id="select-all" checked>
+                    <label class="form-check-label" for="select-all">
+                        Select All Items
+                    </label>
                 </div>
 
                 {{-- Table Headings --}}
@@ -59,9 +70,37 @@
                         <span>Total</span>
                         <span id="cart-total">₱580.00</span>
                     </div>
-                    <a href="/checkout" class="btn btn-dark w-100 mt-3">PROCEED TO CHECKOUT</a>
+                    <a href="/checkout" id="checkoutBtn"
+                        class="btn btn-dark w-100 mt-3 
+                        @guest('customer') disabled @endguest">
+                        PROCEED TO CHECKOUT
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 @endsection
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkoutBtn = document.getElementById('checkoutBtn');
+
+        checkoutBtn.addEventListener('click', function(event) {
+            @guest('customer')
+                return; // Don't do anything if guest
+            @else
+                const cart = JSON.parse(localStorage.getItem('cart')) || {};
+                const hasSelectedItems = Object.values(cart).some(item => item.selected === true);
+
+                if (!hasSelectedItems) {
+                    event.preventDefault(); // Stop the redirect
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No items selected',
+                        text: 'Please select at least one item to proceed to checkout.',
+                        confirmButtonColor: '#3085d6'
+                    });
+                }
+            @endguest
+        });
+    });
+</script>

@@ -266,6 +266,7 @@
             overlay.classList.toggle('active');
         }
 
+        // Search function
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('searchForm');
             const input = document.getElementById('searchInput');
@@ -340,7 +341,7 @@
                 });
             });
 
-            // Add to Cart logic
+            // Cart utilities
             function getCart() {
                 return JSON.parse(localStorage.getItem('cart')) || {};
             }
@@ -357,15 +358,17 @@
 
             function addToCart(product) {
                 const cart = getCart();
+
                 if (cart[product.id]) {
                     cart[product.id].qty += product.qty;
                 } else {
+                    product.selected = false; // 👈 Set false by default when new
                     cart[product.id] = product;
                 }
+
                 saveCart(cart);
                 updateCartCount();
 
-                // SweetAlert instead of alert
                 Swal.fire({
                     title: 'Added to Cart!',
                     text: `${product.name} has been added to your cart.`,
@@ -374,11 +377,11 @@
                     timer: 2000,
                     timerProgressBar: true
                 }).then(() => {
-                    location.reload(); // reload after alert closes
+                    location.reload();
                 });
             }
 
-            // Event for Add to Cart button
+            // Add to Cart button event
             document.getElementById('addToCartBtn').addEventListener('click', function() {
                 const id = document.getElementById('modalProductId').value;
                 const name = document.getElementById('modalName').textContent;
@@ -392,7 +395,8 @@
                     name,
                     image,
                     qty,
-                    price
+                    price,
+                    selected: true // ✅ this is key
                 };
 
                 addToCart(product);
@@ -405,6 +409,7 @@
             const container = document.getElementById('cart-items-container');
             const subtotalEl = document.getElementById('cart-subtotal');
             const totalEl = document.getElementById('cart-total');
+            const selectAllCheckbox = document.getElementById('select-all');
 
             if (!container || !subtotalEl || !totalEl) {
                 console.error('Required cart elements are missing.');
@@ -416,6 +421,7 @@
             function renderCart() {
                 container.innerHTML = '';
                 let total = 0;
+                let allSelected = true;
 
                 if (Object.keys(cart).length === 0) {
                     container.innerHTML = '<p class="text-muted">Your cart is empty.</p>';
@@ -425,47 +431,53 @@
                 }
 
                 Object.values(cart).forEach(product => {
+                    if (product.selected === undefined) product.selected = true;
+
+                    if (!product.selected) allSelected = false;
                     const subtotal = product.price * product.qty;
-                    total += subtotal;
+                    if (product.selected) total += subtotal;
 
                     const row = document.createElement('div');
                     row.className = 'row align-items-center border-bottom pb-3 mb-3';
                     row.innerHTML = `
-                        <div class="col-12 col-md-6 d-flex mb-3 mb-md-0">
-                            <button class="btn text-dark me-2 p-0 remove-btn" data-id="${product.id}">
-                                <i class="bi bi-x-lg"></i>
-                            </button>
-                            <img src="${product.image}" alt="${product.name}" class="me-3 rounded" width="80" />
-                            <div>
-                                <p class="mb-1 fw-semibold">${product.name}</p>
-                                <p class="mb-0 text-muted small">
-                                    <strong>Weight:</strong> ${product.weight || '1 kg'} <br />
-                                    <strong>Origin:</strong> Ocean/Sea
-                                </p>
-                            </div>
-                        </div>
+                <div class="col-12 col-md-6 d-flex mb-3 mb-md-0">
+                    <input type="checkbox" class="form-check-input me-2 item-select" data-id="${product.id}" ${product.selected ? 'checked' : ''} />
+                    <button class="btn text-dark me-2 p-0 remove-btn" data-id="${product.id}">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                    <img src="${product.image}" alt="${product.name}" class="me-3 rounded" width="80" />
+                    <div>
+                        <p class="mb-1 fw-semibold">${product.name}</p>
+                        <p class="mb-0 text-muted small">
+                            <strong>Weight:</strong> ${product.weight || '1 kg'} <br />
+                            <strong>Origin:</strong> Ocean/Sea
+                        </p>
+                    </div>
+                </div>
 
-                        <div class="col-4 col-md-2">
-                            <span class="d-block">₱${product.price.toFixed(2)}</span>
-                        </div>
+                <div class="col-4 col-md-2">
+                    <span class="d-block">₱${product.price.toFixed(2)}</span>
+                </div>
 
-                        <div class="col-4 col-md-2">
-                            <div class="input-group input-group-sm justify-content-center" style="max-width: 100px;">
-                                <button class="btn btn-outline-secondary px-2 change-qty" data-id="${product.id}" data-action="decrease">-</button>
-                                <input type="text" class="form-control text-center px-1" style="max-width: 40px;" value="${product.qty}" readonly />
-                                <button class="btn btn-outline-secondary px-2 change-qty" data-id="${product.id}" data-action="increase">+</button>
-                            </div>
-                        </div>
+                <div class="col-4 col-md-2">
+                    <div class="input-group input-group-sm justify-content-center" style="max-width: 100px;">
+                        <button class="btn btn-outline-secondary px-2 change-qty" data-id="${product.id}" data-action="decrease">-</button>
+                        <input type="text" class="form-control text-center px-1" style="max-width: 40px;" value="${product.qty}" readonly />
+                        <button class="btn btn-outline-secondary px-2 change-qty" data-id="${product.id}" data-action="increase">+</button>
+                    </div>
+                </div>
 
-                        <div class="col-4 col-md-2 text-dark fw-semibold">
-                            ₱${subtotal.toFixed(2)}
-                        </div>
-                    `;
+                <div class="col-4 col-md-2 text-dark fw-semibold">
+                    ₱${subtotal.toFixed(2)}
+                </div>
+            `;
                     container.appendChild(row);
                 });
 
                 subtotalEl.textContent = `₱${total.toFixed(2)}`;
                 totalEl.textContent = `₱${total.toFixed(2)}`;
+                selectAllCheckbox.checked = allSelected;
+                localStorage.setItem('cart', JSON.stringify(cart));
             }
 
             container.addEventListener('click', function(e) {
@@ -500,10 +512,28 @@
                         if (result.isConfirmed) {
                             delete cart[id];
                             localStorage.setItem('cart', JSON.stringify(cart));
-                            location.reload(); // or renderCart(); if you're using dynamic rendering
+                            renderCart();
                         }
                     });
                 }
+            });
+
+            container.addEventListener('change', function(e) {
+                if (e.target.classList.contains('item-select')) {
+                    const id = e.target.dataset.id;
+                    cart[id].selected = e.target.checked;
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    renderCart();
+                }
+            });
+
+            selectAllCheckbox.addEventListener('change', function() {
+                const isChecked = this.checked;
+                Object.values(cart).forEach(product => {
+                    product.selected = isChecked;
+                });
+                localStorage.setItem('cart', JSON.stringify(cart));
+                renderCart();
             });
 
             renderCart();
@@ -530,44 +560,50 @@
 
             const cart = JSON.parse(localStorage.getItem('cart')) || {};
             let subtotal = 0;
+            let hasSelectedItems = false;
 
             summaryContainer.innerHTML = '';
 
-            if (Object.keys(cart).length === 0) {
-                summaryContainer.innerHTML = '<p class="text-muted">Your cart is empty.</p>';
-                subtotalEl.textContent = '₱0.00';
-                totalEl.textContent = '₱0.00';
-                return;
-            }
-
             Object.values(cart).forEach(product => {
+
+                if (product.selected === false) return;
+
                 const lineTotal = product.price * product.qty;
                 subtotal += lineTotal;
+                hasSelectedItems = true;
 
                 const div = document.createElement('div');
                 div.className = 'd-flex justify-content-between mb-3 align-items-center';
                 div.innerHTML = `
-                    <div class="d-flex align-items-start">
-                        <img src="${product.image}" width="70" class="me-2 rounded" alt="Product Image">
-                        <div>
-                            <div class="fw-semibold">${product.name}</div>
-                            <small>
-                                Weight: 
-                                <span class="text-muted">
-                                    ${product.weight || '1 kg'}
-                                </span>
-                                <br>
-                                Qty: ${product.qty}
-                            </small>
-                        </div>
-                    </div>
-                    <div class="text-end">₱${lineTotal.toFixed(2)}</div>
-                `;
+            <div class="d-flex align-items-start">
+                <img src="${product.image}" width="70" class="me-2 rounded" alt="Product Image">
+                <div>
+                    <div class="fw-semibold">${product.name}</div>
+                    <small>
+                        Weight: 
+                        <span class="text-muted">
+                            ${product.weight || '1 kg'}
+                        </span>
+                        <br>
+                        Qty: ${product.qty}
+                    </small>
+                </div>
+            </div>
+            <div class="text-end">₱${lineTotal.toFixed(2)}</div>
+        `;
                 summaryContainer.appendChild(div);
             });
 
-            subtotalEl.textContent = `₱${subtotal.toFixed(2)}`;
-            totalEl.textContent = `₱${subtotal.toFixed(2)}`;
+            if (!hasSelectedItems) {
+                summaryContainer.innerHTML = '<p class="text-muted">Your cart is empty.</p>';
+                subtotalEl.textContent = '₱0.00';
+                totalEl.textContent = '₱0.00';
+            } else {
+                subtotalEl.textContent = `₱${subtotal.toFixed(2)}`;
+                totalEl.textContent = `₱${subtotal.toFixed(2)}`;
+            }
+
+            localStorage.setItem('cart', JSON.stringify(cart));
         });
 
         document.getElementById('logoutBtn').addEventListener('click', function(e) {

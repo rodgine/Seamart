@@ -45,14 +45,16 @@
             </div>
         </div>
     </div>
+
     <div class="row">
+        <!-- Recent Transactions -->
         <div class="col-lg-4 d-flex align-items-stretch">
-            <div class="card w-100 border-light">
-                <div class="card-body p-4">
+            <div class="card w-100 border-light d-flex flex-column">
+                <div class="card-body p-4 d-flex flex-column">
                     <div class="mb-4">
                         <h5 class="card-title fw-semibold">Recent Transactions</h5>
                     </div>
-                    <ul class="timeline-widget mb-0 position-relative mb-n5">
+                    <ul class="timeline-widget mb-0 position-relative">
                         @php
                             $colors = ['success', 'danger', 'primary', 'warning'];
                         @endphp
@@ -61,27 +63,29 @@
                             @php
                                 $color = $colors[$loop->index % count($colors)];
                             @endphp
-                            <li class="timeline-item d-flex position-relative overflow-hidden">
-                                <div class="timeline-time text-dark flex-shrink-0 text-end">
+                            <li class="timeline-item d-flex position-relative overflow-hidden mb-3">
+                                <div class="timeline-time text-dark flex-shrink-0 text-end me-3" style="min-width: 100px;">
                                     {{ \Carbon\Carbon::parse($log->date)->format('M d, Y') }}
                                 </div>
-                                <div class="timeline-badge-wrap d-flex flex-column align-items-center">
+                                <div class="timeline-badge-wrap d-flex flex-column align-items-center me-3">
                                     <span
-                                        class="timeline-badge border-2 border border-{{ $color }} flex-shrink-0 my-8"></span>
+                                        class="timeline-badge border-2 border border-{{ $color }} flex-shrink-0 my-2"></span>
                                     <span class="timeline-badge-border d-block flex-shrink-0"></span>
                                 </div>
-                                <div class="timeline-desc fs-3 text-dark mt-n1">
+                                <div class="timeline-desc fs-3 text-dark mt-1">
                                     {!! $log->description !!}
                                 </div>
                             </li>
                         @empty
                             <li class="timeline-item d-flex position-relative overflow-hidden">
-                                <div class="timeline-time text-muted flex-shrink-0 text-end">N/A</div>
-                                <div class="timeline-badge-wrap d-flex flex-column align-items-center">
-                                    <span class="timeline-badge border-2 border border-danger flex-shrink-0 my-8"></span>
+                                <div class="timeline-time text-muted flex-shrink-0 text-end me-3" style="min-width: 100px;">
+                                    N/A
+                                </div>
+                                <div class="timeline-badge-wrap d-flex flex-column align-items-center me-3">
+                                    <span class="timeline-badge border-2 border border-danger flex-shrink-0 my-2"></span>
                                     <span class="timeline-badge-border d-block flex-shrink-0"></span>
                                 </div>
-                                <div class="timeline-desc fs-3 text-muted mt-n1">
+                                <div class="timeline-desc fs-6 text-muted mt-1">
                                     No transactions yet.
                                 </div>
                             </li>
@@ -90,6 +94,8 @@
                 </div>
             </div>
         </div>
+
+        <!-- Recently Added Products -->
         <div class="col-lg-8 d-flex align-items-stretch">
             <div class="card w-100">
                 <div class="card-body p-4">
@@ -108,10 +114,10 @@
                                         <h6 class="fw-semibold mb-0">Category</h6>
                                     </th>
                                     <th class="border-bottom-0">
-                                        <h6 class="fw-semibold mb-0">stock</h6>
+                                        <h6 class="fw-semibold mb-0">Stock</h6>
                                     </th>
                                     <th class="border-bottom-0">
-                                        <h6 class="fw-semibold mb-0">price</h6>
+                                        <h6 class="fw-semibold mb-0">Price</h6>
                                     </th>
                                 </tr>
                             </thead>
@@ -155,8 +161,8 @@
                                             </div>
                                         </td>
                                         <td class="border-bottom-0">
-                                            <h6 class="fw-semibold mb-0 fs-4">&#8369;
-                                                {{ number_format($product->price) }}/kg</h6>
+                                            <h6 class="fw-semibold mb-0 fs-4">
+                                                &#8369;{{ number_format($product->price) }}/kg</h6>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -167,6 +173,7 @@
             </div>
         </div>
     </div>
+
     <div class="row">
         <div class="col-12 m-3">
             <h5 class="most-viewed-products">Best Selling Products</h5>
